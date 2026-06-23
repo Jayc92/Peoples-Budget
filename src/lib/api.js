@@ -1,0 +1,129 @@
+// ============================================================================
+//  Data layer for The People's Budget.
+//  Drop-in replacement for the artifact's window.storage helpers.
+//
+//   * Profile (income range, state, allocations) => stays LOCAL on the device
+//     via localStorage. It is never sent to the server. Maximum privacy.
+//   * Votes & event responses => Supabase, but only through aggregate RPCs,
+//     so no client can ever read another person's individual budget.
+// ============================================================================
+import { supabase } from "./supabase";
+
+// ── anonymous device id ─────────────────────────────────────────────────────
+const CID_KEY = "pb_client_id";
+export function getClientId() {
+  let id = localStorage.getItem(CID_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(CID_KEY, id);
+  }
+  return id;
+}
+
+// ── profile (local only) ────────────────────────────────────────────────────
+const PROFILE_KEY = "pb_profile_v2";
+export function loadProfile() {
+  try {
+    const r = localStorage.getItem(PROFILE_KEY);
+    return r ? JSON.parse(r) : null;
+  } catch {
+    return null;
+  }
+}
+export function saveProfile(p) {
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ── votes ───────────────────────────────────────────────────────────────────
+// alloc = { federal:{bucketId:pct}, state:{...}, county:{...} }
+export async function submitVote(region, bracket, filing, alloc) {
+  const { error } = await supabase.rpc("submit_vote", {
+    p_client_id: getClientId(),
+    p_region: region,
+    p_bracket: bracket,
+    p_filing: filing,
+    p_alloc: alloc,
+  });
+  if (error) {
+    if (error.message?.includes("rate_limited")) {
+      const e = new Error("rate_limited");
+      e.code = "rate_limited";
+      throw e;
+    }
+    throw error;
+  }
+}
+
+// Returns { count, federal:{bucket:avg}, state:{...}, county:{...} }
+function reshapePulse(rows) {
+  const out = { count: 0, federal: {}, state: {}, county: {} };
+  for (const r of rows || []) {
+    if (!out[r.tier]) out[r.tier] = {};
+    out[r.tier][r.bucket] = Math.round(Number(r.avg_pct));
+    out.count = Math.max(out.count, Number(r.n));
+  }
+  return out;
+}
+
+// dim: 'all' | 'region' | 'bracket'
+export async function getPulse({ dim = "all", region = null, bracket = null } = {}) {
+  const { data, error } = await supabase.rpc("get_pulse", {
+    p_dim: dim,
+    p_region: region,
+    p_bracket: bracket,
+  });
+  if (error) throw error;
+  return reshapePulse(data);
+}
+
+// Returns { [bracketIdx]: { count, federal:{}, state:{}, county:{} } }
+export async function getPulseAllBrackets() {
+  const { data, error } = await supabase.rpc("get_pulse_all_brackets");
+  if (error) throw error;
+  const byBracket = {};
+  for (const r of data || []) {
+    const b = String(r.bracket);
+    if (!byBracket[b]) byBracket[b] = { count: 0, federal: {}, state: {}, county: {} };
+    byBracket[b][r.tier][r.bucket] = Math.round(Number(r.avg_pct));
+    byBracket[b].count = Math.max(byBracket[b].count, Number(r.n));
+  }
+  return byBracket;
+}
+
+// ── events ──────────────────────────────────────────────────────────────────
+export async function getActiveEvent() {
+  const { data, error } = await supabase.rpc("get_active_events");
+  if (error) throw error;
+  const e = (data || [])[0];
+  if (!e) return null;
+  return {
+    id: e.id,
+    badge: e.badge,
+    title: e.title,
+    body: e.body,
+    prompt: e.prompt,
+    tier: e.tier,
+    bucketId: e.bucket_id,
+  };
+}
+
+export async function recordEventResponse(eventId, choice) {
+  const { error } = await supabase.rpc("record_event_response", {
+    p_event_id: eventId,
+    p_client_id: getClientId(),
+    p_choice: choice,
+  });
+  if (error) throw error;
+}
+
+export async function getEventTally(eventId) {
+  const { data, error } = await supabase.rpc("get_event_tally", { p_event_id: eventId });
+  if (error) throw error;
+  const t = { increase: 0, same: 0, decrease: 0 };
+  for (const r of data || []) t[r.choice] = Number(r.n);
+  return t;
+}
