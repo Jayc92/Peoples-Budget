@@ -326,5 +326,5 @@ export default function App() {
     );
   }
 
-  return <AppShell>{page}</AppShell>;
+  return <AppShell screen={screen}>{page}</AppShell>;
 }

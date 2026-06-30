@@ -54,7 +54,7 @@ export default function SharePanel({ name, region, alloc, taxes, annualTotal, go
       : "";
 
   const caption = ready
-    ? `I created my own version of the public budget by deciding where my estimated federal, state, and local taxes should go.\n\n${priorityLine}${gapLine}\n\nBuild your own People's Budget at ${SHARE_URL}`
+    ? `I created my own People's Budget by deciding where my estimated federal, state, and local taxes should go.\n\n${priorityLine}${gapLine}\n\nBuild your own People's Budget at ${SHARE_URL}`
     : "";
 
   const copy = async () => {

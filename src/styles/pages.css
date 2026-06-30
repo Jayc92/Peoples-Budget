@@ -122,27 +122,48 @@
 .event-page { padding-block: var(--sp-5) var(--sp-7); }
 .event-page__actions { margin-top: var(--sp-5); }
 
-/* Desktop / tablet landscape: bounded workspace where ONLY the ledger scrolls. */
-@media (min-width: 768px) {
+/* Desktop & split-screen: two-column bounded workspace where only the ledger
+   scrolls. Breakpoint is low (640px) so a half-screen window keeps two columns
+   instead of falling back to the stacked mobile layout. */
+@media (min-width: 640px) {
+  .alloc { padding-block: var(--sp-4) var(--sp-5); }
+  .alloc__rules { margin: var(--sp-2) 0 var(--sp-3); }
+
   .alloc__workspace {
+    --workspace-offset: 248px;            /* header + page title + rules + paddings */
     display: flex; flex-direction: column;
-    height: calc(100vh - 210px); min-height: 460px;
+    height: calc(100vh - var(--workspace-offset));               /* fallback */
+    height: min(760px, calc(100dvh - var(--workspace-offset)));  /* dvh: handles Safari chrome */
+    min-height: 440px;
   }
   .alloc__tabs { position: static; }
   .alloc__panes {
     flex: 1; min-height: 0;
-    display: grid; grid-template-columns: minmax(0, 1fr) 340px;
-    gap: var(--sp-6); align-items: stretch;
+    display: grid; grid-template-columns: minmax(0, 1fr) clamp(280px, 32%, 340px);
+    gap: var(--sp-5); align-items: stretch;
   }
   .alloc__ledger-pane {
     overflow-y: auto; overflow-x: hidden; min-height: 0;
-    padding-right: var(--sp-3); padding-bottom: var(--sp-7);
+    padding-right: var(--sp-3); padding-bottom: var(--sp-6);
   }
+  /* Three-row rail: summary / shrinkable donut / reserved actions. The actions
+     track is auto + flex-shrink:0, so it can never be clipped or pushed off. */
   .alloc__rail {
-    margin-top: 0; min-height: 0; overflow: hidden;
-    display: flex; flex-direction: column; gap: var(--sp-4);
+    margin-top: 0; min-height: 0; height: 100%; overflow: hidden;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: var(--sp-4);
   }
-  .alloc__actions { margin-top: auto; }
+  .alloc__rail-scroll { min-height: 0; overflow-y: auto; overflow-x: hidden; }
+  .alloc__actions {
+    margin-top: 0; flex-shrink: 0; position: relative; z-index: 2;
+    background: var(--color-paper); padding-block: var(--sp-4);
+  }
+
+  /* Free vertical space on the bounded allocation screen so the action row stays
+     on-screen at short heights: drop the lead paragraph and the footer here. The
+     footer must not compete with the fixed-height workspace for viewport height. */
+  .app-shell[data-screen="allocate"] .page-header__lead { display: none; }
+  .app-shell[data-screen="allocate"] .app-footer { display: none; }
 }
 @media (min-width: 900px) {
   .results__tables { grid-template-columns: repeat(3, 1fr); }

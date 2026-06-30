@@ -63,7 +63,9 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
 
           <aside className="alloc__rail">
             <AllocationSummary tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
-            <BudgetDonut tier={tier} allocTier={alloc[tierId]} />
+            <div className="alloc__rail-scroll">
+              <BudgetDonut tier={tier} allocTier={alloc[tierId]} />
+            </div>
             <div className="alloc__actions">
               <Button variant="primary" disabled={!allComplete} onClick={() => onSubmit && onSubmit(alloc)}>
                 {ctaLabel}

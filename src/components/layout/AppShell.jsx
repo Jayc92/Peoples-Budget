@@ -1,9 +1,9 @@
 import AppHeader from "./AppHeader";
 import AppFooter from "./AppFooter";
 
-export default function AppShell({ children }) {
+export default function AppShell({ children, screen }) {
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-screen={screen}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <AppHeader />
       <main id="main-content" className="app-main" tabIndex={-1}>{children}</main>
