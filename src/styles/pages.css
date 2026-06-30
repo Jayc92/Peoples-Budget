@@ -1,0 +1,149 @@
+/* ============================================================================
+   Pages — Welcome + Profile (UI-v2.0A Stage 2)
+   ============================================================================ */
+
+/* ── Welcome ────────────────────────────────────────────────────────────── */
+.welcome { padding-block: var(--sp-6) var(--sp-7); }
+.welcome__cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  max-width: 22rem;
+}
+.welcome__privacy { margin-top: var(--sp-4); max-width: 30rem; }
+
+.welcome__preview {
+  margin-top: var(--sp-6);
+}
+.welcome__preview-cap {
+  font-size: 0.75rem;
+  color: var(--color-ink-faint);
+  text-align: center;
+  margin-top: var(--sp-2);
+}
+
+@media (min-width: 768px) {
+  .welcome { padding-block: var(--sp-7) var(--sp-8); }
+  .welcome__grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--sp-7);
+    align-items: center;
+  }
+  .welcome__preview { margin-top: 0; }
+  .welcome__cta-group { margin-bottom: 0; }
+}
+
+/* ── Profile ────────────────────────────────────────────────────────────── */
+.profile { padding-block: var(--sp-5) var(--sp-7); }
+
+.ledger-section + .ledger-section {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-5);
+  border-top: var(--border-thin);
+}
+.ledger-section__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.ledger-section__num {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  color: var(--color-gold);
+  font-weight: 700;
+}
+.ledger-section__title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.profile__estimate { margin-top: var(--sp-6); }
+.profile__actions {
+  margin-top: var(--sp-6);
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .profile__layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-7);
+    align-items: start;
+  }
+  .profile__estimate {
+    margin-top: 0;
+    position: sticky;
+    top: var(--sp-4);
+  }
+}
+
+/* income mode toggle row */
+.income-mode {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+/* income-mode inline label sits flush in its flex row */
+.income-mode .field__label { margin: 0; }
+.profile__privacy { margin-top: var(--sp-6); }
+
+/* ── Stage 3 / UI-v2.1 allocation workspace ─────────────────────────────── */
+.alloc { padding-block: var(--sp-5) var(--sp-7); }
+.alloc__actions { margin-top: var(--sp-5); display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+
+/* Mobile-first: normal page scrolling, no nested scroll container. */
+.alloc__rules { font-size: var(--fs-small); color: var(--color-ink-soft); margin: var(--sp-3) 0; }
+.alloc__repair {
+  font-size: var(--fs-small); color: var(--color-warning);
+  background: #f6e3e0; border: 1px solid #e3b6ae; border-radius: var(--radius-sm);
+  padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-3);
+}
+.alloc__tabs { position: sticky; top: 0; z-index: 5; background: var(--color-paper); }
+.alloc__rail { margin-top: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+.alloc__ledger-pane { overflow-x: hidden; }
+
+.results { padding-block: var(--sp-5) var(--sp-7); }
+.results__tables { display: grid; gap: var(--sp-5); margin: var(--sp-5) 0; }
+.results__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-6); }
+
+.event-page { padding-block: var(--sp-5) var(--sp-7); }
+.event-page__actions { margin-top: var(--sp-5); }
+
+/* Desktop / tablet landscape: bounded workspace where ONLY the ledger scrolls. */
+@media (min-width: 768px) {
+  .alloc__workspace {
+    display: flex; flex-direction: column;
+    height: calc(100vh - 210px); min-height: 460px;
+  }
+  .alloc__tabs { position: static; }
+  .alloc__panes {
+    flex: 1; min-height: 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--sp-6); align-items: stretch;
+  }
+  .alloc__ledger-pane {
+    overflow-y: auto; overflow-x: hidden; min-height: 0;
+    padding-right: var(--sp-3); padding-bottom: var(--sp-7);
+  }
+  .alloc__rail {
+    margin-top: 0; min-height: 0; overflow: hidden;
+    display: flex; flex-direction: column; gap: var(--sp-4);
+  }
+  .alloc__actions { margin-top: auto; }
+}
+@media (min-width: 900px) {
+  .results__tables { grid-template-columns: repeat(3, 1fr); }
+}

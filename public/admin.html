@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>People's Budget — Admin</title>
+<!--
+  Shared-secret admin. This is NOT Supabase Auth. The secret is entered at
+  runtime, kept only in sessionStorage, and verified server-side against a
+  salted bcrypt hash. No secret is stored in this file. Only the publishable
+  Supabase key (safe for browsers) is embedded. See ADMIN-v1.1 notes.
+-->
+<style>
+  :root { --bg:#0D0D0F; --card:rgba(255,255,255,0.04); --bd:rgba(255,255,255,0.12); --txt:#F0EDE8; --blue:#4A90D9; --green:#5CDB95; --red:#E05C5C; --muted:#8a8a8a; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:640px; margin:0 auto; padding:24px 16px 64px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  h1 { font-size:20px; margin:0; }
+  .sub { color:var(--muted); font-size:13px; margin:2px 0 20px; }
+  .card { background:var(--card); border:1px solid var(--bd); border-radius:14px; padding:18px; margin-bottom:16px; }
+  label { display:block; font-size:12px; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:.06em; margin:12px 0 6px; }
+  input, textarea, select { width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--bd); border-radius:9px; padding:11px 12px; color:var(--txt); font-size:15px; font-family:inherit; outline:none; }
+  textarea { min-height:70px; resize:vertical; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > div { flex:1 1 160px; }
+  button { border:none; border-radius:10px; padding:12px 16px; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  button[disabled] { opacity:.5; cursor:not-allowed; }
+  .primary { background:var(--blue); color:#fff; width:100%; }
+  .ghost { background:transparent; border:1px solid var(--bd); color:var(--txt); }
+  .small { padding:7px 12px; font-size:12px; }
+  .pill { display:inline-block; padding:3px 10px; border-radius:100px; font-size:11px; font-weight:700; }
+  .on { background:rgba(92,219,149,.18); color:var(--green); border:1px solid rgba(92,219,149,.4); }
+  .off { background:rgba(255,255,255,.06); color:var(--muted); border:1px solid var(--bd); }
+  .ev { border:1px solid var(--bd); border-radius:12px; padding:14px; margin-bottom:10px; }
+  .ev h3 { margin:6px 0 4px; font-size:15px; }
+  .ev p { margin:4px 0; font-size:12px; color:var(--muted); }
+  .ev-actions { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .msg { font-size:13px; padding:10px 12px; border-radius:9px; margin-bottom:12px; }
+  .msg.err { background:rgba(224,92,92,.12); color:var(--red); border:1px solid rgba(224,92,92,.3); }
+  .msg.ok  { background:rgba(92,219,149,.12); color:var(--green); border:1px solid rgba(92,219,149,.3); }
+  .hide { display:none; }
+  .check { display:flex; align-items:center; gap:8px; font-size:14px; color:#ccc; margin-top:14px; }
+  .check input { width:auto; }
+  small.hint { color:var(--muted); font-size:11px; display:block; margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>People's Budget — Admin</h1>
+      <p class="sub">Manage live events. Shared-secret access.</p>
+    </div>
+    <button id="logoutBtn" class="ghost small hide" type="button">Log out</button>
+  </div>
+
+  <!-- LOGIN -->
+  <form id="loginForm" class="card" autocomplete="on">
+    <label for="secret">Admin password</label>
+    <input id="secret" name="password" type="password" autocomplete="current-password" placeholder="enter admin password" />
+    <div style="height:12px"></div>
+    <button id="unlockBtn" class="primary" type="submit">Unlock</button>
+    <div id="loginMsg"></div>
+  </form>
+
+  <!-- PANEL -->
+  <div id="panel" class="hide">
+    <div id="msg" aria-live="polite"></div>
+
+    <div class="card">
+      <h3 id="formTitle" style="margin:0 0 12px;font-size:16px">New event</h3>
+      <label for="f_id">Event ID (slug, unique)</label>
+      <input id="f_id" placeholder="evt_2026_border_funding" />
+      <small class="hint">Lowercase letters, numbers, hyphens, underscores. Max 64.</small>
+
+      <label for="f_title">Title</label>
+      <input id="f_title" placeholder="Emergency Border Funding Debated" maxlength="160" />
+
+      <label for="f_badge">Badge</label>
+      <input id="f_badge" placeholder="BREAKING" maxlength="40" />
+
+      <label for="f_body">Body (context)</label>
+      <textarea id="f_body" maxlength="2000" placeholder="A short explanation of what's happening..."></textarea>
+
+      <label for="f_prompt">Prompt (the question)</label>
+      <textarea id="f_prompt" maxlength="500" placeholder="If the choice were yours, how would this change your ___ funding?"></textarea>
+
+      <div class="row">
+        <div>
+          <label for="f_tier">Tier</label>
+          <select id="f_tier"></select>
+        </div>
+        <div>
+          <label for="f_bucket">Category</label>
+          <select id="f_bucket"></select>
+        </div>
+      </div>
+
+      <div class="check">
+        <input id="f_active" type="checkbox" checked />
+        <label for="f_active" style="margin:0;text-transform:none;letter-spacing:0;font-size:14px;color:#ccc">Active (visible in the app now)</label>
+      </div>
+
+      <div style="height:16px"></div>
+      <button id="saveBtn" class="primary" type="button">Save event</button>
+      <div style="height:8px"></div>
+      <button id="clearBtn" class="ghost" style="width:100%" type="button">Clear / new</button>
+    </div>
+
+    <h3 style="font-size:15px;margin:24px 0 10px;color:#aaa">Existing events</h3>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Publishable (anon) key only — safe in the browser. No admin secret here.
+const SUPABASE_URL = "https://gftkuwqfvvbomzkamwep.supabase.co";
+const SUPABASE_ANON = "sb_publishable_RCeMPeM5fB_n0wUo62d-3A_5qO57iRQ";
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON, { auth: { persistSession: false } });
+
+const BUCKETS = {
+  federal: [["social_security","Social Security"],["medicare_medicaid","Medicare & Medicaid"],["defense","National Defense"],["debt_interest","Debt Interest"],["income_security","Income Security"],["veterans","Veterans Benefits"],["education","Education"],["transportation","Infrastructure"],["housing","Housing & Community"],["homeland","Homeland Security"],["justice","Justice & Law"],["environment","Environment & Energy"],["foreign_aid","Foreign Affairs"],["general_gov","General Government"],["science","Science & Space"],["agriculture","Agriculture"]],
+  state: [["st_health","Health & Medicaid"],["st_k12","K-12 Education Aid"],["st_gov","General Government & Other"],["st_higher","Higher Education"],["st_transport","Highways & Transit"],["st_safety","Public Safety"],["st_environment","Environment & Parks"],["st_welfare","Public Assistance"],["st_corrections","Corrections"]],
+  county: [["co_schools","Local Schools"],["co_safety","Police & Fire"],["co_admin","County Admin & Courts"],["co_health","Public Health"],["co_water","Sanitation & Water"],["co_roads","Roads & Streets"],["co_social","Social Services"],["co_parks","Parks & Libraries"]],
+};
+
+let secret = sessionStorage.getItem("pb_admin_secret") || "";
+let saving = false;
+let events = [];   // in-memory event list; never serialized into the DOM
+
+const $ = id => document.getElementById(id);
+const show = (el, on) => el.classList.toggle("hide", !on);
+
+function friendly(error){
+  const m = (error && error.message) ? error.message : "";
+  if (m.includes("locked_out")) return { text: "Too many attempts. Try again in about 15 minutes.", logout: false };
+  if (m.includes("unauthorized")) return { text: "Your session expired. Please log in again.", logout: true };
+  if (m.includes("event_not_found")) return { text: "That event no longer exists — it may have been deleted. Refreshing the list.", logout: false };
+  if (m.includes("invalid_id")) return { text: "Event ID must be lowercase letters, numbers, hyphens or underscores (max 64).", logout: false };
+  if (m.includes("invalid_title")) return { text: "Title is required and must be under 160 characters.", logout: false };
+  if (m.includes("invalid_tier")) return { text: "Choose a valid tier.", logout: false };
+  if (m.includes("invalid_bucket")) return { text: "Choose a category that belongs to the selected tier.", logout: false };
+  if (m.includes("invalid_badge") || m.includes("invalid_body") || m.includes("invalid_prompt")) return { text: "One of the text fields is too long.", logout: false };
+  return { text: "Something went wrong. Please try again.", logout: false };
+}
+function flash(text, ok=true){ const m=$("msg"); m.className="msg "+(ok?"ok":"err"); m.textContent=text; if(ok) setTimeout(()=>{ if(m.textContent===text){m.textContent="";m.className="";} }, 3500); }
+function handleError(error){ const f=friendly(error); if(f.logout){ doLogout(f.text); } else { flash(f.text, false); if((error&&error.message||"").includes("event_not_found")){ load(); } } }
+
+function fillTiers(){
+  const sel=$("f_tier"); sel.innerHTML="";
+  for(const t of Object.keys(BUCKETS)){ const o=document.createElement("option"); o.value=t; o.textContent=t[0].toUpperCase()+t.slice(1); sel.appendChild(o); }
+  fillBuckets();
+}
+function fillBuckets(){
+  const t=$("f_tier").value, sel=$("f_bucket"); sel.innerHTML="";
+  for(const [id,label] of BUCKETS[t]){ const o=document.createElement("option"); o.value=id; o.textContent=label; sel.appendChild(o); }
+}
+
+// ---- safe DOM construction (no innerHTML with dynamic data, no inline handlers) ----
+function eventCard(e){
+  const card=document.createElement("div"); card.className="ev";
+  const pill=document.createElement("span"); pill.className="pill "+(e.active?"on":"off"); pill.textContent=e.active?"ACTIVE":"inactive";
+  const h=document.createElement("h3"); h.textContent=e.title + (e.badge? " · "+e.badge : "");
+  const meta=document.createElement("p"); meta.textContent=`id: ${e.id}   tier: ${e.tier||"—"}   category: ${e.bucket_id||"—"}`;
+  card.append(pill,h,meta);
+  if(e.prompt){ const p=document.createElement("p"); p.textContent=e.prompt; card.append(p); }
+  const actions=document.createElement("div"); actions.className="ev-actions";
+  const editB=document.createElement("button"); editB.className="ghost small"; editB.type="button"; editB.textContent="Edit";
+  editB.addEventListener("click",()=>editEvent(e));
+  const togB=document.createElement("button"); togB.className="ghost small"; togB.type="button"; togB.textContent=e.active?"Deactivate":"Activate";
+  togB.addEventListener("click",()=>toggleActive(e, togB));
+  const delB=document.createElement("button"); delB.className="ghost small"; delB.type="button"; delB.style.color="var(--red)"; delB.textContent="Delete";
+  delB.addEventListener("click",()=>delEvent(e, delB));
+  actions.append(editB,togB,delB); card.append(actions);
+  return card;
+}
+
+async function load(){
+  const { data, error } = await sb.rpc("admin_list_events", { p_secret: secret });
+  if(error){ handleError(error); return; }
+  events = data || [];
+  const list=$("list"); list.innerHTML="";
+  if(!events.length){ const p=document.createElement("p"); p.style.cssText="color:var(--muted);font-size:13px"; p.textContent="No events yet."; list.append(p); return; }
+  for(const e of events) list.append(eventCard(e));
+}
+
+function editEvent(e){
+  $("formTitle").textContent="Edit event";
+  $("f_id").value=e.id; $("f_title").value=e.title||""; $("f_badge").value=e.badge||"";
+  $("f_body").value=e.body||""; $("f_prompt").value=e.prompt||"";
+  if(e.tier){ $("f_tier").value=e.tier; fillBuckets(); }
+  if(e.bucket_id) $("f_bucket").value=e.bucket_id;
+  $("f_active").checked=!!e.active;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetForm(){
+  $("formTitle").textContent="New event";
+  ["f_id","f_title","f_badge","f_body","f_prompt"].forEach(i=>$(i).value="");
+  $("f_active").checked=true; fillBuckets();
+}
+
+async function save(){
+  if(saving) return;                          // prevent duplicate submissions
+  const id=$("f_id").value.trim(), title=$("f_title").value.trim();
+  if(!id || !title){ flash("Event ID and Title are required.", false); return; }
+  saving=true; const btn=$("saveBtn"); btn.disabled=true; btn.textContent="Saving…";
+  try{
+    const { error } = await sb.rpc("admin_upsert_event", {
+      p_secret: secret, p_id: id, p_active: $("f_active").checked,
+      p_badge: $("f_badge").value.trim() || null, p_title: title,
+      p_body: $("f_body").value.trim() || null, p_prompt: $("f_prompt").value.trim() || null,
+      p_tier: $("f_tier").value, p_bucket_id: $("f_bucket").value,
+    });
+    if(error){ handleError(error); return; }
+    flash("Saved."); resetForm(); await load();
+  } finally { saving=false; btn.disabled=false; btn.textContent="Save event"; }
+}
+
+async function toggleActive(e, btn){
+  btn.disabled=true;
+  try{
+    const { error } = await sb.rpc("admin_set_active", { p_secret: secret, p_id: e.id, p_active: !e.active });
+    if(error){ handleError(error); return; }
+    flash(!e.active?"Activated.":"Deactivated."); await load();
+  } finally { btn.disabled=false; }
+}
+
+async function delEvent(e, btn){
+  if(!confirm("Delete this event permanently? Its responses are removed too.")) return;
+  btn.disabled=true;
+  try{
+    const { error } = await sb.rpc("admin_delete_event", { p_secret: secret, p_id: e.id });
+    if(error){ handleError(error); return; }
+    flash("Deleted."); await load();
+  } finally { btn.disabled=false; }
+}
+
+async function unlock(ev){
+  ev.preventDefault();
+  const s=$("secret").value.trim(); if(!s) return;
+  const btn=$("unlockBtn"); btn.disabled=true; btn.textContent="Checking…";
+  try{
+    const { data, error } = await sb.rpc("admin_check", { p_secret: s });
+    if(error){ $("loginMsg").innerHTML=""; const d=document.createElement("div"); d.className="msg err"; d.textContent=friendly(error).text; $("loginMsg").append(d); return; }
+    if(!data){ $("loginMsg").innerHTML=""; const d=document.createElement("div"); d.className="msg err"; d.textContent="Incorrect password."; $("loginMsg").append(d); return; }
+    secret=s; sessionStorage.setItem("pb_admin_secret", s);
+    enterPanel();
+  } finally { btn.disabled=false; btn.textContent="Unlock"; }
+}
+
+function enterPanel(){
+  $("loginMsg").innerHTML=""; $("secret").value="";
+  show($("loginForm"), false); show($("panel"), true); show($("logoutBtn"), true);
+  fillTiers(); load();
+}
+function doLogout(message){
+  secret=""; sessionStorage.removeItem("pb_admin_secret");
+  show($("panel"), false); show($("logoutBtn"), false); show($("loginForm"), true);
+  if(message){ $("loginMsg").innerHTML=""; const d=document.createElement("div"); d.className="msg err"; d.textContent=message; $("loginMsg").append(d); }
+}
+
+// wire up (no inline handlers anywhere)
+$("loginForm").addEventListener("submit", unlock);
+$("f_tier").addEventListener("change", fillBuckets);
+$("saveBtn").addEventListener("click", save);
+$("clearBtn").addEventListener("click", resetForm);
+$("logoutBtn").addEventListener("click", ()=>doLogout());
+
+// resume an existing session, verifying the secret is still valid
+if(secret){
+  sb.rpc("admin_check",{p_secret:secret}).then(({data,error})=>{
+    if(error || !data){ doLogout(); } else { enterPanel(); }
+  });
+}
+</script>
+</body>
+</html>

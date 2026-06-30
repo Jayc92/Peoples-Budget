@@ -2,10 +2,12 @@
 //  Data layer for The People's Budget.
 //  Drop-in replacement for the artifact's window.storage helpers.
 //
-//   * Profile (income range, state, allocations) => stays LOCAL on the device
-//     via localStorage. It is never sent to the server. Maximum privacy.
-//   * Votes & event responses => Supabase, but only through aggregate RPCs,
-//     so no client can ever read another person's individual budget.
+//   * Profile (exact income, display name) => stays LOCAL on the device via
+//     localStorage. Exact income and display name are never sent to the server.
+//   * Votes => the FULL allocation is submitted via submit_vote, associated only
+//     with an anonymous device id, an income-range index, filing status, and
+//     state. Reads happen only through aggregate RPCs, so no client can ever
+//     read another person's individual budget.
 // ============================================================================
 import { supabase } from "./supabase";
 
@@ -52,6 +54,11 @@ export async function submitVote(region, bracket, filing, alloc) {
     if (error.message?.includes("rate_limited")) {
       const e = new Error("rate_limited");
       e.code = "rate_limited";
+      throw e;
+    }
+    if (error.message?.includes("invalid_allocation")) {
+      const e = new Error("invalid_allocation");
+      e.code = "invalid_allocation";
       throw e;
     }
     throw error;

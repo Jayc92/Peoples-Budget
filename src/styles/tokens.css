@@ -1,0 +1,90 @@
+/* ============================================================================
+   The People's Budget — Design Tokens (UI-v2.0A "Modern Civic Ledger")
+   Warm, editorial, restrained. Paper + ink, civic green, ledger gold.
+   ============================================================================ */
+:root {
+  /* Surface & ink */
+  --color-paper: #f4f1e8;
+  --color-paper-deep: #e7e1d4;
+  --color-white: #fffdf8;
+  --color-ink: #17211f;
+  --color-ink-soft: #46504d;
+  --color-ink-faint: #6c746f;
+
+  /* Lines / rules */
+  --color-line: #c9c3b6;
+  --color-line-strong: #989184;
+
+  /* Civic accents */
+  --color-civic: #315c52;
+  --color-civic-dark: #21443c;
+  --color-civic-tint: #e4ebe6;
+  --color-gold: #b48735;
+  --color-gold-tint: #f0e7d2;
+  --color-warning: #a54539;
+
+  /* Semantic */
+  --color-bg: var(--color-paper);
+  --color-surface: var(--color-white);
+  --color-text: var(--color-ink);
+  --color-text-soft: var(--color-ink-soft);
+  --color-accent: var(--color-civic);
+
+  /* Allocation comparison semantics (kept neutral, never partisan) */
+  --color-more: var(--color-civic);     /* user funds above government */
+  --color-less: var(--color-warning);   /* user funds below government */
+
+  /* Typography */
+  --font-serif: "Newsreader", "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --fs-eyebrow: 0.75rem;
+  --fs-small: 0.8125rem;
+  --fs-body: 0.9375rem;
+  --fs-lead: 1.0625rem;
+  --fs-h3: 1.25rem;
+  --fs-h2: 1.625rem;
+  --fs-h1: 2.25rem;
+  --fs-display: 2.875rem;
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.35;
+  --lh-body: 1.6;
+
+  --tracking-eyebrow: 0.14em;
+  --tracking-label: 0.06em;
+
+  /* Numeric data — tabular figures for money & percentages */
+  --font-num: var(--font-sans);
+  --feat-tabular: "tnum" 1, "lnum" 1;
+
+  /* Spacing scale (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+
+  /* Shape */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --border-thin: 1px solid var(--color-line);
+  --border-strong: 1px solid var(--color-line-strong);
+  --border-ink: 1.5px solid var(--color-ink);
+
+  /* Restrained elevation (used sparingly) */
+  --shadow-sm: 0 1px 2px rgba(23, 33, 31, 0.06);
+  --shadow-md: 0 2px 8px rgba(23, 33, 31, 0.08);
+
+  /* Layout measures */
+  --measure: 38rem;          /* readable text column */
+  --container: 46rem;        /* default content width */
+  --container-wide: 64rem;   /* results / comparison width */
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--color-civic);
+}
