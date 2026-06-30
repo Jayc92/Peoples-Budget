@@ -153,7 +153,23 @@
     display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
     gap: var(--sp-4);
   }
-  .alloc__rail-scroll { min-height: 0; overflow-y: auto; overflow-x: hidden; }
+  /* Middle row centers the donut and scales it to fit — no scrollbar at normal
+     laptop heights. Internal scrolling is re-enabled only at extreme short
+     heights (see the max-height query below). */
+  .alloc__rail-scroll {
+    min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  /* Donut card and chart shrink with the viewport instead of overflowing. */
+  .alloc__rail-scroll .donut {
+    width: 100%; max-height: 100%; min-height: 0; overflow: hidden;
+    padding: clamp(12px, 2vh, 20px);
+  }
+  .alloc__rail-scroll .donut__svg {
+    width: clamp(110px, 18vh, 150px);
+    height: clamp(110px, 18vh, 150px);
+  }
   .alloc__actions {
     margin-top: 0; flex-shrink: 0; position: relative; z-index: 2;
     background: var(--color-paper); padding-block: var(--sp-4);
@@ -164,6 +180,20 @@
      footer must not compete with the fixed-height workspace for viewport height. */
   .app-shell[data-screen="allocate"] .page-header__lead { display: none; }
   .app-shell[data-screen="allocate"] .app-footer { display: none; }
+}
+
+/* Shorter desktops: compress spacing before any scrolling is considered. */
+@media (min-width: 640px) and (max-height: 760px) {
+  .alloc__rail { gap: var(--sp-3); }
+  .alloc__rail .alloc-summary { padding: var(--sp-3); }
+  .alloc__rail-scroll .donut { padding: var(--sp-3); gap: var(--sp-2); }
+  .alloc__rail-scroll .donut__legend { gap: 4px; }
+  .alloc__actions { padding-block: var(--sp-3); }
+}
+
+/* Only at genuinely extreme short heights may the donut row scroll internally. */
+@media (min-width: 640px) and (max-height: 560px) {
+  .alloc__rail-scroll { overflow-y: auto; }
 }
 @media (min-width: 900px) {
   .results__tables { grid-template-columns: repeat(3, 1fr); }
