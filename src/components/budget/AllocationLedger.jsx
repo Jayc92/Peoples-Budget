@@ -1,7 +1,7 @@
 import AllocationRow from "./AllocationRow";
 import { tierRemaining, MAX_PER_CATEGORY } from "../../lib/allocation";
 
-export default function AllocationLedger({ tier, allocTier, tierAmount, onChange }) {
+export default function AllocationLedger({ tier, allocTier, tierAmount, onChange, onActivate }) {
   const remaining = tierRemaining(allocTier);
   return (
     <div className="alloc-ledger">
@@ -15,6 +15,7 @@ export default function AllocationLedger({ tier, allocTier, tierAmount, onChange
             maxAllowed={Math.min(value + remaining, MAX_PER_CATEGORY)}
             tierAmount={tierAmount}
             onChange={(v) => onChange(b.id, v)}
+            onActivate={onActivate}
           />
         );
       })}

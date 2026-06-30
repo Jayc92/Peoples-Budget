@@ -4,13 +4,17 @@ import { fmt, realPct } from "../../lib/taxEstimator";
 
 // `--cat` carries the category color (data binding, not decorative styling).
 // Category color appears only as a narrow left rule and the slider accent.
-export default function AllocationRow({ bucket, value, maxAllowed = MAX_PER_CATEGORY, tierAmount, onChange }) {
+export default function AllocationRow({ bucket, value, maxAllowed = MAX_PER_CATEGORY, tierAmount, onChange, onActivate }) {
   const id = useId();
   const Icon = bucket.Icon;
   const dollars = dollarsFor(value, tierAmount);
   const overCap = value > MAX_PER_CATEGORY; // e.g. restored legacy allocation
   return (
-    <div className={`alloc-row${overCap ? " alloc-row--over" : ""}`} style={{ "--cat": bucket.color }}>
+    <div
+      className={`alloc-row${overCap ? " alloc-row--over" : ""}`}
+      style={{ "--cat": bucket.color }}
+      onPointerDown={() => onActivate && onActivate(bucket.id)}
+    >
       <div className="alloc-row__head">
         <Icon className="alloc-row__icon" size={18} aria-hidden="true" />
         <div className="alloc-row__meta">
@@ -30,6 +34,7 @@ export default function AllocationRow({ bucket, value, maxAllowed = MAX_PER_CATE
         step="1"
         value={Math.min(value, maxAllowed)}
         onChange={(e) => onChange(Number(e.target.value))}
+        onFocus={() => onActivate && onActivate(bucket.id)}
         className="alloc-row__slider"
         aria-label={`${bucket.label}: ${value} percent, ${fmt(dollars)}`}
       />
