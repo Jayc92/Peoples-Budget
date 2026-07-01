@@ -232,11 +232,10 @@
 .alloc-row__gov-val { font-weight: 600; }
 
 /* funded-category snapshot (replaces the active-category card in the rail).
-   The card owns its border; a fixed header sits above an internally-scrolling
-   list, so the bottom border is never clipped however many categories fund. */
+   A normal static card that grows with content — no internal scroll. The card
+   owns its border, which stays fully visible however many categories fund. */
 .alloc-snapshot {
-  display: grid; grid-template-rows: auto minmax(0, 1fr);
-  flex: 1; min-height: 0; height: 100%; overflow: hidden;
+  height: auto; min-height: 0; overflow: visible;
   background: var(--color-white); border: var(--border-strong); border-radius: var(--radius-md);
 }
 .alloc-snapshot__head {
@@ -245,11 +244,10 @@
 }
 .alloc-snapshot__list {
   list-style: none; margin: 0; padding: 0;
-  min-height: 0; overflow-y: auto;
+  height: auto; max-height: none; overflow: visible;
 }
-.alloc-snapshot__list:focus-visible { outline: 2px solid var(--color-civic); outline-offset: -2px; }
 .alloc-snapshot__item {
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
   border-left: 3px solid var(--cat, var(--color-line));
   border-bottom: var(--border-thin);
 }

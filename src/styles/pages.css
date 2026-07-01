@@ -130,39 +130,37 @@
   .alloc { padding-block: var(--sp-4) var(--sp-5); }
   .alloc__rules { margin: var(--sp-2) 0 var(--sp-3); }
 
+  /* The workspace grows to fit the (auto-height) rail; the ledger keeps its own
+     bounded scroll. When the rail is taller than the viewport, the whole page
+     scrolls — preferable to scrolling inside the small snapshot card. */
   .alloc__workspace {
     --workspace-offset: 248px;            /* header + page title + rules + paddings */
-    display: flex; flex-direction: column;
-    height: calc(100vh - var(--workspace-offset));               /* fallback */
-    height: min(760px, calc(100dvh - var(--workspace-offset)));  /* dvh: handles Safari chrome */
-    min-height: 440px;
+    min-height: min(760px, calc(100dvh - var(--workspace-offset)));
+    height: auto;
   }
   .alloc__tabs { position: static; }
   .alloc__panes {
-    flex: 1; min-height: 0;
     display: grid; grid-template-columns: minmax(0, 1fr) clamp(280px, 32%, 340px);
-    gap: var(--sp-5); align-items: stretch;
+    gap: var(--sp-5); align-items: start;
   }
+  /* Ledger keeps an independent bounded scroll at ordinary desktop sizes. */
   .alloc__ledger-pane {
+    max-height: min(760px, calc(100dvh - var(--workspace-offset)));
     overflow-y: auto; overflow-x: hidden; min-height: 0;
     padding-right: var(--sp-3); padding-bottom: var(--sp-6);
   }
-  /* Three-row rail: summary / shrinkable donut / reserved actions. The actions
-     track is auto + flex-shrink:0, so it can never be clipped or pushed off. */
+  /* Natural-height rail: summary, then the auto-growing snapshot, then actions
+     directly beneath it (not pinned/absolute). */
   .alloc__rail {
-    margin-top: 0; min-height: 0; height: 100%; overflow: hidden;
-    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: var(--sp-4);
+    margin-top: 0; height: auto; min-height: 0; overflow: visible;
+    display: flex; flex-direction: column; gap: var(--sp-4);
   }
-  /* Middle row holds the funded-category snapshot. The wrapper is bounded and
-     clips nothing visible — the card inside owns its border and scrolls its own
-     list, so the card border (incl. the bottom) is always fully visible. */
+  /* Snapshot wrapper no longer constrains height — the card grows with content. */
   .alloc__snapshot-wrap {
-    min-height: 0; overflow: hidden;
-    display: flex; flex-direction: column;
+    display: block; min-height: 0; overflow: visible;
   }
   .alloc__actions {
-    margin-top: 0; flex-shrink: 0; position: relative; z-index: 2;
+    margin-top: 0; position: relative;
     background: var(--color-paper); padding-block: var(--sp-4);
   }
 

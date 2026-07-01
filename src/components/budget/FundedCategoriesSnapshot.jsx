@@ -30,7 +30,7 @@ export default function FundedCategoriesSnapshot({ tier, allocTier, tierAmount }
           <p className="alloc-snapshot__empty-sub">Move a slider to build your allocation.</p>
         </div>
       ) : (
-        <ul className="alloc-snapshot__list" tabIndex={0}>
+        <ul className="alloc-snapshot__list">
           {funded.map(({ bucket, value }) => {
             const points = Math.round(value - bucket.real);
             return (
