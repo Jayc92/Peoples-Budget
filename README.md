@@ -122,7 +122,7 @@ src/
   components/
     layout/         # AppShell, header, footer, page header
     ui/             # buttons, fields, meters, primitives
-    budget/         # allocation ledger, rows, summary, donut, tier nav
+    budget/         # allocation ledger, rows, summary, funded snapshot, tier nav
     results/        # comparison controls, community pulse, share panel
     civic/          # civic-themed presentational pieces
   data/             # budgetBuckets.js (categories), taxConstants.js (brackets/ranges)
