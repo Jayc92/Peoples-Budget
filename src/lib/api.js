@@ -87,20 +87,6 @@ export async function getPulse({ dim = "all", region = null, bracket = null } = 
   return reshapePulse(data);
 }
 
-// Returns { [bracketIdx]: { count, federal:{}, state:{}, county:{} } }
-export async function getPulseAllBrackets() {
-  const { data, error } = await supabase.rpc("get_pulse_all_brackets");
-  if (error) throw error;
-  const byBracket = {};
-  for (const r of data || []) {
-    const b = String(r.bracket);
-    if (!byBracket[b]) byBracket[b] = { count: 0, federal: {}, state: {}, county: {} };
-    byBracket[b][r.tier][r.bucket] = Math.round(Number(r.avg_pct));
-    byBracket[b].count = Math.max(byBracket[b].count, Number(r.n));
-  }
-  return byBracket;
-}
-
 // ── events ──────────────────────────────────────────────────────────────────
 export async function getActiveEvent() {
   const { data, error } = await supabase.rpc("get_active_events");

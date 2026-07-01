@@ -26,13 +26,20 @@ never sent to or stored on the server.
 
 ## 2. Apply the migrations (in order)
 
-Run each file's contents in the SQL Editor, oldest first. There is no `0002`.
+Run each file's contents in the SQL Editor, oldest first.
 
 ### `0001_peoples_budget.sql`
 Core schema: the `votes`, `vote_buckets`, `events`, and `event_responses` tables;
 the Row Level Security baseline (RLS on, no public table policies); and the public
 read/write RPCs (`submit_vote`, `get_pulse`, event functions). Tables are reachable
 **only** through these functions.
+
+### `0002_peoples_budget_admin.sql`
+Admin base: creates the `admin_config` table and the base event-management RPCs
+(`admin_check`, `admin_list_events`, `admin_upsert_event`, `admin_set_active`,
+`admin_delete_event`). Must run **before** `0003`, which hardens these objects and
+deletes from `admin_config`. No admin secret is seeded here — the owner sets a
+bcrypt hash after `0003` (see `docs/admin-setup.md`).
 
 ### `0003_admin_hardening.sql`
 Admin access hardening: a bcrypt-hashed shared admin secret stored in

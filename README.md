@@ -40,7 +40,7 @@ it never tells you how to vote, it just reveals preferences.
   selected **income range**. Small cohorts (under **10** submitted budgets) are
   suppressed server-side, so tiny samples are never shown.
 - **Desktop allocation workspace** — on wider screens the category ledger scrolls
-  inside a bounded workspace while the tier navigation, running totals, funded-allocation snapshot, and
+  inside a bounded workspace while the tier navigation, running totals, donut, and
   Back/Continue controls stay in view; narrow screens use normal page scrolling.
 - **Shareable result card** — an optional, screenshot-ready summary with an
   explanatory caption that describes what the app is and your top priorities.
@@ -122,7 +122,7 @@ src/
   components/
     layout/         # AppShell, header, footer, page header
     ui/             # buttons, fields, meters, primitives
-    budget/         # allocation ledger, rows, summary, funded snapshot, tier nav
+    budget/         # allocation ledger, rows, summary, donut, tier nav
     results/        # comparison controls, community pulse, share panel
     civic/          # civic-themed presentational pieces
   data/             # budgetBuckets.js (categories), taxConstants.js (brackets/ranges)
@@ -140,9 +140,10 @@ supabase/
 allocation, results, and event screens and handles localStorage persistence. The
 actual UI lives in `pages/` and `components/`.
 
-Migration files currently present (there is no `0002`):
+Migration files currently present:
 
 - `0001_peoples_budget.sql`
+- `0002_peoples_budget_admin.sql`
 - `0003_admin_hardening.sql`
 - `0004_admin_event_not_found.sql`
 - `0005_allocation_integrity.sql`
