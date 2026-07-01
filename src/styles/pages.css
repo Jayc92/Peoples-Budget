@@ -113,7 +113,7 @@
 }
 .alloc__tabs { position: sticky; top: 0; z-index: 5; background: var(--color-paper); }
 .alloc__rail { margin-top: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
-.alloc__rail-detail { display: none; } /* desktop-only; shown at >=640px */
+.alloc__snapshot-wrap { display: none; } /* desktop-only; shown at >=640px */
 .alloc__ledger-pane { overflow-x: hidden; }
 
 .results { padding-block: var(--sp-5) var(--sp-7); }
@@ -154,9 +154,10 @@
     display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
     gap: var(--sp-4);
   }
-  /* Middle row holds the active-category detail card. It fits without scrolling
-     at ordinary laptop heights; the action row below stays reserved. */
-  .alloc__rail-detail {
+  /* Middle row holds the funded-category snapshot. The wrapper is bounded and
+     clips nothing visible — the card inside owns its border and scrolls its own
+     list, so the card border (incl. the bottom) is always fully visible. */
+  .alloc__snapshot-wrap {
     min-height: 0; overflow: hidden;
     display: flex; flex-direction: column;
   }
@@ -176,7 +177,7 @@
 @media (min-width: 640px) and (max-height: 760px) {
   .alloc__rail { gap: var(--sp-3); }
   .alloc__rail .alloc-summary { padding: var(--sp-3); }
-  .alloc__rail .active-cat { padding: var(--sp-3); }
+  .alloc__rail .alloc-snapshot__head { margin-bottom: var(--sp-2); }
   .alloc__actions { padding-block: var(--sp-3); }
 }
 @media (min-width: 900px) {

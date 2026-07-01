@@ -8,15 +8,13 @@ import PageHeader from "../components/layout/PageHeader";
 import TierNavigation from "../components/budget/TierNavigation";
 import AllocationSummary from "../components/budget/AllocationSummary";
 import AllocationLedger from "../components/budget/AllocationLedger";
-import ActiveCategoryCard from "../components/budget/ActiveCategoryCard";
+import FundedCategoriesSnapshot from "../components/budget/FundedCategoriesSnapshot";
 import Button from "../components/ui/Button";
 
 // `alloc` is owned by the orchestrator (so it can be persisted to localStorage).
 // This page is controlled. Only the category ledger scrolls on desktop/tablet.
 export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, onBack }) {
   const [tierId, setTierId] = useState("federal");
-  // Which category the user is currently adjusting (null = neutral prompt).
-  const [activeId, setActiveId] = useState(null);
   const tier = TIER_BY_ID[tierId];
   const tierAmount = taxes ? taxes[tier.taxKey] : 0;
 
@@ -24,16 +22,8 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
   const overTiers = TIERS.filter((t) => overCapBuckets(alloc[t.id]).length > 0);
   const needsRepair = overTiers.length > 0;
 
-  const setBucket = (bucketId, v) => {
-    setActiveId(bucketId);
+  const setBucket = (bucketId, v) =>
     onAllocChange({ ...alloc, [tierId]: clampSet(alloc[tierId], bucketId, v) });
-  };
-
-  // Changing tiers resets the active category to the neutral prompt.
-  const selectTier = (id) => { setTierId(id); setActiveId(null); };
-
-  const activeBucket = activeId ? tier.buckets.find((b) => b.id === activeId) : null;
-  const activeValue = activeBucket ? (alloc[tierId][activeBucket.id] || 0) : 0;
 
   const ctaLabel = allComplete
     ? "See my results"
@@ -63,18 +53,18 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
 
       <div className="alloc__workspace">
         <div className="alloc__tabs">
-          <TierNavigation tiers={TIERS} current={tierId} alloc={alloc} onSelect={selectTier} />
+          <TierNavigation tiers={TIERS} current={tierId} alloc={alloc} onSelect={setTierId} />
         </div>
 
         <div className="alloc__panes">
           <div className="alloc__ledger-pane">
-            <AllocationLedger tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} onChange={setBucket} onActivate={setActiveId} />
+            <AllocationLedger tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} onChange={setBucket} />
           </div>
 
           <aside className="alloc__rail">
             <AllocationSummary tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
-            <div className="alloc__rail-detail">
-              <ActiveCategoryCard bucket={activeBucket} value={activeValue} tierAmount={tierAmount} />
+            <div className="alloc__snapshot-wrap">
+              <FundedCategoriesSnapshot tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
             </div>
             <div className="alloc__actions">
               <Button variant="primary" disabled={!allComplete} onClick={() => onSubmit && onSubmit(alloc)}>
