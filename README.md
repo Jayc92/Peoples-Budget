@@ -40,7 +40,7 @@ it never tells you how to vote, it just reveals preferences.
   selected **income range**. Small cohorts (under **10** submitted budgets) are
   suppressed server-side, so tiny samples are never shown.
 - **Desktop allocation workspace** — on wider screens the category ledger scrolls
-  inside a bounded workspace while the tier navigation, running totals, donut, and
+  inside a bounded workspace while the tier navigation, running totals, funded-allocation snapshot, and
   Back/Continue controls stay in view; narrow screens use normal page scrolling.
 - **Shareable result card** — an optional, screenshot-ready summary with an
   explanatory caption that describes what the app is and your top priorities.
