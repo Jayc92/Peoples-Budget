@@ -5,7 +5,7 @@ import {
   tierComplete, MIN_FUNDED_PER_TIER, MAX_PER_CATEGORY,
 } from "../../lib/allocation";
 
-export default function AllocationSummary({ tier, allocTier, tierAmount }) {
+export default function AllocationSummary({ tier, allocTier, tierAmount, blocked = false }) {
   const sum = tierSum(allocTier);
   const remaining = tierRemaining(allocTier);
   const dollarsLeft = dollarsFor(remaining, tierAmount);
@@ -28,14 +28,16 @@ export default function AllocationSummary({ tier, allocTier, tierAmount }) {
       </div>
       <ProgressMeter value={sum} tone={complete ? "civic" : "gold"} label={`${tier.label} allocated, ${sum} percent`} />
       <p className="alloc-summary__status">
-        {complete ? (
+        {blocked ? (
+          <span className="alloc-summary__warn">100% is already assigned. Reduce another category first.</span>
+        ) : complete ? (
           <span className="alloc-summary__done">This level is complete.</span>
         ) : sum === 100 ? (
           <span className="alloc-summary__warn">{blocker}</span>
         ) : (
           <>
-            <span className="num">{fmt(dollarsLeft)}</span> left to assign
-            <span className="muted"> · {remaining}% remaining</span>
+            <span className="num">{remaining}%</span> left to assign
+            <span className="muted"> · about {fmt(dollarsLeft)} of your {tier.label.toLowerCase()} taxes</span>
           </>
         )}
       </p>

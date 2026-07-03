@@ -227,7 +227,14 @@
 .alloc-row__figures { text-align: right; flex: none; }
 .alloc-row__dollars { display: block; font-weight: 600; font-size: var(--fs-body); }
 .alloc-row__pct { display: block; font-size: var(--fs-small); color: var(--color-ink-soft); }
-.alloc-row__slider { width: 100%; margin: var(--sp-3) 0 var(--sp-2); accent-color: var(--cat, var(--color-civic)); min-height: 24px; }
+.alloc-row__slider-wrap { position: relative; margin: var(--sp-3) 0 var(--sp-2); }
+.alloc-row__slider { display: block; width: 100%; margin: 0; accent-color: var(--cat, var(--color-civic)); min-height: 24px; }
+/* Fixed reference tick at the current government allocation on the 0–50 track. */
+.alloc-row__gov-marker {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 2px; height: 14px; border-radius: 1px;
+  background: var(--color-ink-faint); pointer-events: none;
+}
 .alloc-row__gov { display: flex; justify-content: space-between; font-size: var(--fs-small); color: var(--color-ink-faint); }
 .alloc-row__gov-val { font-weight: 600; }
 

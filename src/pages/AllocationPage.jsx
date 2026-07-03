@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TIERS, TIER_BY_ID } from "../data/budgetBuckets";
 import {
-  clampSet, allTiersComplete, overCapBuckets,
+  clampSet, tierSum, allTiersComplete, overCapBuckets,
   MAX_PER_CATEGORY, MIN_FUNDED_PER_TIER,
 } from "../lib/allocation";
 import PageHeader from "../components/layout/PageHeader";
@@ -15,6 +15,9 @@ import Button from "../components/ui/Button";
 // This page is controlled. Only the category ledger scrolls on desktop/tablet.
 export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, onBack }) {
   const [tierId, setTierId] = useState("federal");
+  // Set when the user tries to increase a category while the tier is already at
+  // 100% — we block it (no automatic rebalancing) and explain why.
+  const [blocked, setBlocked] = useState(false);
   const tier = TIER_BY_ID[tierId];
   const tierAmount = taxes ? taxes[tier.taxKey] : 0;
 
@@ -22,8 +25,21 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
   const overTiers = TIERS.filter((t) => overCapBuckets(alloc[t.id]).length > 0);
   const needsRepair = overTiers.length > 0;
 
-  const setBucket = (bucketId, v) =>
-    onAllocChange({ ...alloc, [tierId]: clampSet(alloc[tierId], bucketId, v) });
+  const setBucket = (bucketId, v) => {
+    const allocTier = alloc[tierId];
+    const cur = allocTier[bucketId] || 0;
+    const req = Math.round(v);
+    // At 100%, an increase is blocked (we never silently reduce another category).
+    if (tierSum(allocTier) >= 100 && req > cur) {
+      setBlocked(true);
+      return;
+    }
+    setBlocked(false);
+    onAllocChange({ ...alloc, [tierId]: clampSet(allocTier, bucketId, v) });
+  };
+
+  // Switching tiers clears any transient block message.
+  const selectTier = (id) => { setTierId(id); setBlocked(false); };
 
   const ctaLabel = allComplete
     ? "See my results"
@@ -36,11 +52,12 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
       <PageHeader
         eyebrow="Step 2 — Your allocation"
         title="Assign every dollar"
-        lead="Move each slider to fund what matters to you. Each level — federal, state, and local — must add up to 100%."
+        lead="You're dividing your own estimated tax share across categories. Each level — federal, state, and local — must add up to 100%."
       />
 
       <p className="alloc__rules">
         Fund at least {MIN_FUNDED_PER_TIER} categories in each level. No single category may receive more than {MAX_PER_CATEGORY}%.
+        These sliders split <strong>your estimated share</strong> — 0% means none of <em>your</em> share, not that a program loses all public funding. The mark on each slider shows the current government allocation.
       </p>
 
       {needsRepair && (
@@ -53,7 +70,7 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
 
       <div className="alloc__workspace">
         <div className="alloc__tabs">
-          <TierNavigation tiers={TIERS} current={tierId} alloc={alloc} onSelect={setTierId} />
+          <TierNavigation tiers={TIERS} current={tierId} alloc={alloc} onSelect={selectTier} />
         </div>
 
         <div className="alloc__panes">
@@ -62,7 +79,7 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
           </div>
 
           <aside className="alloc__rail">
-            <AllocationSummary tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
+            <AllocationSummary tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} blocked={blocked} />
             <div className="alloc__snapshot-wrap">
               <FundedCategoriesSnapshot tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
             </div>
