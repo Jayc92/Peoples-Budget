@@ -6,8 +6,9 @@ assumed), plus SQL the owner can safely re-run any time. No credentials appear h
 ## Result summary (verified this audit)
 
 **Solid:**
-- **RLS is ON for all 7 tables with ZERO policies** → PostgREST reads/writes on raw
-  tables return **no rows** for `anon`/`authenticated`.
+- **RLS is ON for all 7 tables with ZERO policies**, and direct raw-table grants
+  have been revoked. Direct access by `anon`/`authenticated` now returns
+  **permission denied**.
 - **All public RPCs are `SECURITY DEFINER`, owned by `postgres`, with a fixed
   `search_path`** (`public` / `public, extensions`) → no search-path injection.
 - **Internal validators are NOT public-callable:** `assert_valid_alloc` and
@@ -16,30 +17,31 @@ assumed), plus SQL the owner can safely re-run any time. No credentials appear h
 - **`get_pulse_all_brackets` is dropped** and no longer exists (confirmed absent).
 - Event tally RPC returns only aggregate counts, never identities.
 
-**Defense-in-depth GAP (finding SEC-1, see below):**
-- `anon` and `authenticated` still hold broad **table grants** (SELECT/INSERT/UPDATE/
-  DELETE/TRUNCATE) on `votes`, `vote_buckets`, `event_responses` (Supabase defaults).
-  RLS currently blocks the REST-reachable operations, and TRUNCATE is not exposed by
-  PostgREST — but the raw tables rely on a **single control (RLS)**. The
-  `SECURITY DEFINER` RPCs do **not** need these grants (they run as the table owner).
+**Defense-in-depth — CLOSED (finding SEC-1, applied in migration `0008`):**
+- `anon`/`authenticated` table grants on `votes`, `vote_buckets`, `event_responses`,
+  `events` have been **revoked**. Raw tables are now protected by **two independent
+  layers**: no grant **and** RLS. Verified: a direct `anon` SELECT now returns
+  **permission denied** (not just zero rows), while all RPC flows still work.
 
-## Finding SEC-1 — revoke unneeded table grants (defense in depth)
-**Risk:** if RLS were ever disabled on a table (migration slip, config change), the
-existing grants would immediately expose or allow modification of raw votes. Revoking
-them means raw tables are protected by **two** layers (no grant **and** RLS), matching
-the audit goal "small blast radius if one layer fails."
+## Finding SEC-1 — raw-table grants revoked (defense in depth) — **APPLIED (0008)**
+**Was:** `anon`/`authenticated` held broad table grants (incl. `TRUNCATE`) on the raw
+tables, so protection relied on RLS alone. **Now:** those grants are revoked
+(`0008_lock_raw_tables.sql`), so if RLS were ever disabled, raw votes still would not be
+readable or writable directly — matching the audit goal "small blast radius if one layer
+fails."
 
-**Fix (prepared, apply with owner approval — not applied automatically):**
+**Applied migration:**
 ```sql
--- 00NN_lock_raw_tables.sql  (additive; does NOT touch RLS, RPCs, or data)
-revoke all on table public.votes           from anon, authenticated;
-revoke all on table public.vote_buckets    from anon, authenticated;
-revoke all on table public.event_responses from anon, authenticated;
-revoke all on table public.events          from anon, authenticated;
--- SECURITY DEFINER RPCs continue to work (they execute as the owner).
+-- 0008_lock_raw_tables.sql
+revoke all privileges on table public.votes           from anon, authenticated;
+revoke all privileges on table public.vote_buckets    from anon, authenticated;
+revoke all privileges on table public.event_responses from anon, authenticated;
+revoke all privileges on table public.events          from anon, authenticated;
 ```
-**Safe because:** every public code path goes through an RPC; the client never selects
-tables directly. After applying, re-run the verification below and the app's flows.
+**Verified after apply:** remaining anon/authenticated grants on those tables = **NONE**;
+direct `anon` reads → **permission denied**; `submit_vote` as `anon` still **inserted a
+vote + 33 buckets**; `get_pulse`/`get_active_events` still work; advisors unchanged. The
+`SECURITY DEFINER` RPCs (owner `postgres`) never needed the caller grants.
 
 ---
 
@@ -78,7 +80,7 @@ group by table_name, grantee order by table_name, grantee;
 ```
 
 ## REST/GraphQL & storage
-- PostgREST exposes tables and RPCs; raw-table verbs return no rows under RLS. Only the
+- PostgREST exposes tables and RPCs; raw-table verbs are denied because direct table grants have been revoked, with RLS retained as a second barrier. Only the
   intended RPCs return data (aggregates/events).
 - No Storage buckets are used by this app; confirm none are public in the dashboard.
 - No public view bypasses cohort suppression (no views defined; `get_pulse` is the only
