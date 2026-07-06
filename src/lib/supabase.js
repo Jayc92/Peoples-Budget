@@ -6,11 +6,20 @@ import { createClient } from "@supabase/supabase-js";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!url || !anonKey) {
-  // Helpful during setup — remove or keep, your call.
-  console.warn("Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY in .env");
+// Resilience: a missing/misconfigured env must NOT crash the whole app at module
+// load (which would render a blank white screen). We surface a flag the UI can
+// show, and fall back to harmless placeholders so the SPA still renders — backend
+// calls then fail as normal, already-handled errors rather than a blank page.
+export const configError = !url || !anonKey;
+if (configError) {
+  console.error(
+    "Supabase config missing: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the " +
+    "environment and redeploy. The app will load, but submissions and public results are unavailable."
+  );
 }
 
-export const supabase = createClient(url, anonKey, {
-  auth: { persistSession: false }, // anonymous app — no login needed
-});
+export const supabase = createClient(
+  url || "https://placeholder.invalid",
+  anonKey || "placeholder-anon-key",
+  { auth: { persistSession: false } } // anonymous app — no login needed
+);
