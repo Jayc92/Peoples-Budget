@@ -62,6 +62,16 @@ categories set to 0), which prevents sparse payloads from skewing public average
 across different denominators. Raises the minimum cohort threshold to **10** for
 national, state, and income-range aggregates.
 
+### `0007_drop_pulse_all_brackets.sql`
+Removes the unsuppressed grouped-bracket RPC (`get_pulse_all_brackets`) so the only
+public aggregate path is `get_pulse`, which enforces the minimum cohort threshold.
+
+### `0008_lock_raw_tables.sql`
+Revokes direct `anon`/`authenticated` table privileges from the raw application tables
+(`votes`, `vote_buckets`, `event_responses`, `events`) while preserving all access
+through the approved `SECURITY DEFINER` RPCs. Defense in depth: raw tables are then
+protected by both a lack of grants **and** RLS.
+
 > Run them in this exact numeric order. The repository's `supabase/migrations/`
 > folder is the source of truth and matches what is applied in production.
 
@@ -133,6 +143,13 @@ npm run build          # confirm it builds
 
 ## Publishing a live event
 
+**Keep exactly one event active at a time.** The public app shows only the newest
+active event, so leaving several active is confusing — deactivate the old one before
+activating a new one. The full operating process (publish, verify, retire,
+troubleshoot, monitor) is in `docs/beta-operations-runbook.md`. Note the shipped seed
+event `evt_sample_conflict` (badge `SAMPLE EVENT`) is active on a fresh install and
+should be **deactivated or replaced before launch**.
+
 Use `/admin.html`, or insert directly in Supabase → **Table editor → `events`**:
 
 - `id`: a unique slug, e.g. `evt_2026_border_funding`
@@ -162,4 +179,6 @@ can read individual votes.
 - **Localized gov reference data** per state/county (currently national averages).
 - **Tax-data refresh automation** so federal/state figures update each fiscal year.
 - **A read cache / materialized view** if vote volume gets large.
-- **Push notifications** for live events require a native (Expo) app — APNs + FCM.
+- **Push notifications** for live events will require native APNs/FCM integration
+  through the future **Capacitor** app (see the roadmap). Planned native distribution
+  uses Capacitor to package the existing React/Vite app for iOS and Android.

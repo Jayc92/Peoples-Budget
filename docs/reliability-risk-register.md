@@ -112,7 +112,7 @@ Classification: **Beta blocker** / **Pre-viral blocker** / **Later optimization*
 
 ## R10 — Bad migration / accidental deletion damages data · **S1 · L-Low · Pre-viral blocker (process)**
 - **Scenario:** a destructive/incorrect migration or manual delete harms `votes`, `vote_buckets`, `events`, `event_responses`, or `admin_audit`.
-- **Current controls:** append-only migration history (0001–0007); no destructive prod actions taken without review.
+- **Current controls:** append-only migration history (0001–0008); no destructive prod actions taken without review.
 - **Gaps:** backup/PITR status **unverified** for the current plan (see backup-and-recovery.md); no migration preflight checklist enforced.
 - **Prevention:** migration review + preflight; verify backups/PITR before launch; test a restore.
 - **Recovery:** restore from backup/PITR (owner must confirm availability). **Data-loss potential: HIGH if backups absent.**

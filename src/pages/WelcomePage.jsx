@@ -17,7 +17,7 @@ export default function WelcomePage({ hasSavedProfile = false, onBuild, onContin
           <PageHeader
             eyebrow="A public budget experiment"
             title="You pay the taxes. Where should the money go?"
-            lead="Estimate your federal, state, and local tax contribution, allocate every dollar according to your priorities, and compare your choices with current spending and the public."
+            lead="Estimate your federal, state, and local tax contribution, allocate every dollar according to your priorities, and compare your choices with current government allocation and the public."
           />
 
           <div className="welcome__cta-group">

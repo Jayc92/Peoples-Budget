@@ -40,7 +40,7 @@ Please provide before capacity sign-off:
 7. Is a **staging** Supabase project available for load testing? If not, create one.
 
 ## Test environment
-- Staging Supabase project (own ref/keys), schema migrated 0001–0007.
+- Staging Supabase project (own ref/keys), schema migrated 0001–0008.
 - Synthetic `client_id`s (random UUIDs) and valid complete allocations.
 - A staging deploy of the SPA pointed at staging env vars (or hit RPCs directly).
 - **No production credentials in scripts or CI.** Pass keys via env vars locally.

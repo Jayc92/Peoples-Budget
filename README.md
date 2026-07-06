@@ -40,8 +40,9 @@ it never tells you how to vote, it just reveals preferences.
   selected **income range**. Small cohorts (under **10** submitted budgets) are
   suppressed server-side, so tiny samples are never shown.
 - **Desktop allocation workspace** — on wider screens the category ledger scrolls
-  inside a bounded workspace while the tier navigation, running totals, donut, and
-  Back/Continue controls stay in view; narrow screens use normal page scrolling.
+  inside a bounded workspace while the tier navigation, running totals, the
+  funded-allocation snapshot, and Back/Continue controls stay in view; narrow screens
+  use normal page scrolling.
 - **Shareable result card** — an optional, screenshot-ready summary with an
   explanatory caption that describes what the app is and your top priorities.
 - **Live events** — publish a breaking-news prompt ("how would this change your
@@ -68,6 +69,12 @@ and your complete federal/state/county allocation.
 
 **Returned to the public** — aggregate results only. No raw individual budget rows
 are ever exposed to clients, and cohorts below the threshold are suppressed.
+
+> **On named individuals:** the app has **no authoritative way to identify a
+> politician's (or anyone's) submission.** No name or email is stored, no individual rows
+> are ever returned, and only aggregates of 10+ are shown. Any claim that a specific
+> anonymous budget belongs to a named person is unverifiable unless that person
+> voluntarily shares it.
 
 > In short: your exact income and display name remain in your browser. When you
 > submit a budget, the app sends an anonymous device ID, state, income range,
@@ -109,6 +116,15 @@ npm run dev
 Full step-by-step (including deploy) is in **[BACKEND_SETUP.md](./BACKEND_SETUP.md)**.
 Admin setup is in **[docs/admin-setup.md](./docs/admin-setup.md)**.
 
+**Operations & reliability:** beta process in [`docs/beta-operations-runbook.md`](./docs/beta-operations-runbook.md)
+and [`docs/beta-test-plan.md`](./docs/beta-test-plan.md); viral-readiness in
+[`docs/reliability-risk-register.md`](./docs/reliability-risk-register.md),
+[`docs/incident-response-runbook.md`](./docs/incident-response-runbook.md),
+[`docs/observability-plan.md`](./docs/observability-plan.md),
+[`docs/backup-and-recovery.md`](./docs/backup-and-recovery.md),
+[`docs/load-test-plan.md`](./docs/load-test-plan.md), and
+[`docs/viral-cost-guardrails.md`](./docs/viral-cost-guardrails.md).
+
 ---
 
 ## Project structure
@@ -122,7 +138,7 @@ src/
   components/
     layout/         # AppShell, header, footer, page header
     ui/             # buttons, fields, meters, primitives
-    budget/         # allocation ledger, rows, summary, donut, tier nav
+    budget/         # allocation ledger, rows, summary, funded snapshot, tier nav
     results/        # comparison controls, community pulse, share panel
     civic/          # civic-themed presentational pieces
   data/             # budgetBuckets.js (categories), taxConstants.js (brackets/ranges)
@@ -133,7 +149,7 @@ public/
 docs/
   admin-setup.md    # how to set/rotate the bcrypt-hashed admin secret
 supabase/
-  migrations/       # 0001, 0003, 0004, 0005, 0006 (run in numeric order)
+  migrations/       # 0001–0008 (run in numeric order)
 ```
 
 `App.jsx` is the **orchestration layer** — it routes between the welcome, profile,
@@ -148,10 +164,19 @@ Migration files currently present:
 - `0004_admin_event_not_found.sql`
 - `0005_allocation_integrity.sql`
 - `0006_complete_allocation_shape.sql`
+- `0007_drop_pulse_all_brackets.sql`
+- `0008_lock_raw_tables.sql`
 
 ---
 
 ## Publishing a live event
+
+> **Beta operating policy:** the public app displays only the **newest active
+> event**. Keep **exactly one event active at a time** during the controlled beta —
+> deactivate the previous one before activating a new one. See
+> [`docs/beta-operations-runbook.md`](./docs/beta-operations-runbook.md) for the full
+> publish/retire/troubleshoot process and [`docs/beta-test-plan.md`](./docs/beta-test-plan.md)
+> for the tester checklist.
 
 Use the admin page (`/admin.html`), or insert directly in Supabase →
 **Table editor → `events`**:
@@ -198,7 +223,12 @@ Still ahead:
 - [ ] Localized state/county reference data per jurisdiction
 - [ ] Tax-data refresh automation (e.g. USAspending.gov for federal, each fiscal year)
 - [ ] Read cache / materialized view if vote volume gets large
-- [ ] Native app (Expo) with push notifications for live events
+- [ ] Capacitor-based iOS and Android apps for Apple App Store and Google Play
+      (TestFlight / Google Play internal testing, native shell polish — icons/splash,
+      safe-area and status-bar handling — store privacy disclosures, and
+      backward-compatible backend contracts). Push notifications will require native
+      APNs/FCM integration through the future Capacitor app. The browser version is
+      preserved as the shared product core.
 
 ---
 
