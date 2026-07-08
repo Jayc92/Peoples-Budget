@@ -10,6 +10,34 @@
 //     read another person's individual budget.
 // ============================================================================
 import { supabase } from "./supabase";
+import { TURNSTILE_ENABLED, FUNCTIONS_URL } from "../config";
+
+// POST to a Turnstile-protected Edge Function gateway. Returns on success; on any
+// failure throws an Error whose `.code` is a stable public code the UI can map.
+// The local budget/draft is preserved by the caller on failure.
+async function postGateway(path, payload) {
+  let res;
+  try {
+    res = await fetch(`${FUNCTIONS_URL}/${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    const e = new Error("network");
+    e.code = "network";
+    throw e;
+  }
+  let data = null;
+  try { data = await res.json(); } catch { /* tolerate empty/non-JSON */ }
+  if (!res.ok || (data && data.error)) {
+    const e = new Error((data && data.error) || "server_error");
+    e.code = (data && data.error) || "server_error";
+    throw e;
+  }
+  return data;
+}
+
 
 // ── anonymous device id ─────────────────────────────────────────────────────
 const CID_KEY = "pb_client_id";
@@ -42,7 +70,20 @@ export function saveProfile(p) {
 
 // ── votes ───────────────────────────────────────────────────────────────────
 // alloc = { federal:{bucketId:pct}, state:{...}, county:{...} }
-export async function submitVote(region, bracket, filing, alloc) {
+export async function submitVote(region, bracket, filing, alloc, token) {
+  // When the gateway is enabled, submit through the Turnstile-protected Edge
+  // Function; the token is verified server-side. Otherwise use the direct RPC.
+  if (TURNSTILE_ENABLED) {
+    await postGateway("submit-budget", {
+      token,
+      clientId: getClientId(),
+      region,
+      bracket,
+      filing,
+      alloc,
+    });
+    return;
+  }
   const { error } = await supabase.rpc("submit_vote", {
     p_client_id: getClientId(),
     p_region: region,
@@ -104,7 +145,16 @@ export async function getActiveEvent() {
   };
 }
 
-export async function recordEventResponse(eventId, choice) {
+export async function recordEventResponse(eventId, choice, token) {
+  if (TURNSTILE_ENABLED) {
+    await postGateway("submit-event-response", {
+      token,
+      clientId: getClientId(),
+      eventId,
+      choice,
+    });
+    return;
+  }
   const { error } = await supabase.rpc("record_event_response", {
     p_event_id: eventId,
     p_client_id: getClientId(),

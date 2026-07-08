@@ -212,7 +212,7 @@ export default function App() {
     setScreen("allocate");
   };
 
-  const handleAllocSubmit = async () => {
+  const handleAllocSubmit = async (token) => {
     if (submittingRef.current) return; // prevent double submission
     const done = allTiersComplete(alloc, TIERS);
     if (!done) return;
@@ -225,14 +225,18 @@ export default function App() {
     writeProfile({ ...budgetSnapshot(), submitted: true, submittedAt: ts }); // local budget saved first
 
     try {
-      await submitVote(form.state, bracketIdx, form.filing, alloc);
+      await submitVote(form.state, bracketIdx, form.filing, alloc, token);
     } catch (e) {
       if (e && e.code === "rate_limited") {
         setSubmitNotice({ kind: "info", text: "You've already submitted recently — your earlier budget still counts. You can update again in a few hours." });
       } else if (e && e.code === "invalid_allocation") {
         setSubmitNotice({ kind: "warn", text: "Your budget didn't meet the allocation rules and wasn't submitted. It's saved on this device — adjust it and try again." });
+      } else if (e && (e.code === "turnstile_missing" || e.code === "turnstile_failed")) {
+        setSubmitNotice({ kind: "warn", text: "We couldn't verify the submission. Your budget is saved on this device — please complete the verification and try again." });
+      } else if (e && e.code === "verification_unavailable") {
+        setSubmitNotice({ kind: "warn", text: "Verification is temporarily unavailable, so your budget wasn't submitted. It's saved on this device — please try again in a moment." });
       } else {
-        console.error("vote submission failed", e);
+        console.error("vote submission failed", e && e.code ? e.code : e);
         setSubmitNotice({ kind: "warn", text: "We couldn't reach the server, but your budget is saved on this device." });
       }
     } finally {
@@ -244,7 +248,7 @@ export default function App() {
 
   const openEvent = (from) => { setEventError(null); setEventReturn(from); setScreen("event"); };
 
-  const handleEventResponse = async (choice) => {
+  const handleEventResponse = async (choice, token) => {
     if (!activeEvent) return;
     const updated = { ...respondedEvents, [activeEvent.id]: choice };
     setRespondedEvents(updated);
@@ -254,11 +258,16 @@ export default function App() {
     // defaults and would overwrite a saved budget (or fabricate a fake one).
     writeProfile({ respondedEvents: updated });
     try {
-      await recordEventResponse(activeEvent.id, choice);
+      await recordEventResponse(activeEvent.id, choice, token);
       setEventTally(await getEventTally(activeEvent.id));
     } catch (e) {
-      console.error("event response failed", e);
-      setEventError("We couldn't save your response just now. It's kept on this device — try again in a moment.");
+      const code = e && e.code;
+      if (code === "turnstile_missing" || code === "turnstile_failed" || code === "verification_unavailable") {
+        setEventError("We couldn't verify your response, so it wasn't saved to the public tally. It's kept on this device — please try again in a moment.");
+      } else {
+        console.error("event response failed", code || e);
+        setEventError("We couldn't save your response just now. It's kept on this device — try again in a moment.");
+      }
     }
   };
 

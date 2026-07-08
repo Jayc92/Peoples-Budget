@@ -1,0 +1,9 @@
+# Supabase project config. The write-gateway Edge Functions are PUBLIC (verify_jwt
+# = false): they are protected by server-side Cloudflare Turnstile verification, not
+# by a Supabase JWT. They use the service-role key (injected by Supabase at runtime)
+# to call the write RPCs, so the browser never holds elevated privileges.
+[functions.submit-budget]
+verify_jwt = false
+
+[functions.submit-event-response]
+verify_jwt = false

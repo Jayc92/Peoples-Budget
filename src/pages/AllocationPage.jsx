@@ -9,7 +9,9 @@ import TierNavigation from "../components/budget/TierNavigation";
 import AllocationSummary from "../components/budget/AllocationSummary";
 import AllocationLedger from "../components/budget/AllocationLedger";
 import FundedCategoriesSnapshot from "../components/budget/FundedCategoriesSnapshot";
+import TurnstileWidget from "../components/ui/TurnstileWidget";
 import Button from "../components/ui/Button";
+import { TURNSTILE_ENABLED } from "../config";
 
 // `alloc` is owned by the orchestrator (so it can be persisted to localStorage).
 // This page is controlled. Only the category ledger scrolls on desktop/tablet.
@@ -40,6 +42,18 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
 
   // Switching tiers clears any transient block message.
   const selectTier = (id) => { setTierId(id); setBlocked(false); };
+
+  // Turnstile (only when the gateway is enabled): hold a single-use token; remount
+  // the widget after each submit via a changing key so the next attempt gets a fresh one.
+  const [tsToken, setTsToken] = useState(null);
+  const [tsKey, setTsKey] = useState(0);
+  const submittable = allComplete && (!TURNSTILE_ENABLED || !!tsToken);
+
+  const handleSubmit = () => {
+    if (!submittable || !onSubmit) return;
+    onSubmit(TURNSTILE_ENABLED ? tsToken : undefined);
+    if (TURNSTILE_ENABLED) { setTsToken(null); setTsKey((k) => k + 1); } // single-use reset
+  };
 
   const ctaLabel = allComplete
     ? "See my results"
@@ -84,7 +98,12 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
               <FundedCategoriesSnapshot tier={tier} allocTier={alloc[tierId]} tierAmount={tierAmount} />
             </div>
             <div className="alloc__actions">
-              <Button variant="primary" disabled={!allComplete} onClick={() => onSubmit && onSubmit(alloc)}>
+              {TURNSTILE_ENABLED && (
+                <div className="alloc__turnstile">
+                  <TurnstileWidget key={tsKey} onToken={setTsToken} />
+                </div>
+              )}
+              <Button variant="primary" disabled={!submittable} onClick={handleSubmit}>
                 {ctaLabel}
               </Button>
               {onBack && <Button variant="secondary" onClick={onBack}>Back</Button>}

@@ -371,3 +371,8 @@
 .alloc-row--over { border-left-color: var(--color-warning); background: #fbf1ef; }
 .alloc-row__over { font-size: var(--fs-small); color: var(--color-warning); font-weight: 600; }
 .alloc-summary__warn { color: var(--color-warning); font-weight: 600; }
+
+/* Turnstile verification widget (only rendered when the gateway is enabled) */
+.turnstile { min-height: 65px; }
+.alloc__turnstile { margin-bottom: var(--sp-3); }
+.event-page__turnstile { margin: var(--sp-4) 0; }

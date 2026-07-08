@@ -8,7 +8,7 @@ const CHOICES = [
 
 // A measured civic briefing — not a breaking-news alert. No urgent red, no
 // flashing, no partisan framing.
-export default function LiveEventPanel({ event, response, onRespond, tally }) {
+export default function LiveEventPanel({ event, response, onRespond, tally, disabled = false }) {
   if (!event) return null;
   const tier = TIER_BY_ID[event.tier];
   const bucket = tier && tier.buckets.find((b) => b.id === event.bucketId);
@@ -41,6 +41,7 @@ export default function LiveEventPanel({ event, response, onRespond, tally }) {
             type="button"
             className={`event__choice${response === c.key ? " is-chosen" : ""}`}
             aria-pressed={response === c.key}
+            disabled={disabled}
             onClick={() => onRespond && onRespond(c.key)}
           >
             {c.label}
