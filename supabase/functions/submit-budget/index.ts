@@ -4,7 +4,7 @@
 // Obviously-malformed requests never reach Cloudflare or the database. The existing
 // submit_vote SQL validation + 6h device rate limit remain authoritative/secondary.
 // Never logs token/alloc/clientId; never returns raw database errors.
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { verifyTurnstile, parseHostnames } from "../_shared/turnstile.ts";
 import { corsHeaders, preflightHeaders, isAllowedOrigin, parseAllowedOrigins } from "../_shared/cors.ts";
 import { json } from "../_shared/respond.ts";
