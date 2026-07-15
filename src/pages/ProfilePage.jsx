@@ -17,6 +17,19 @@ const DEFAULT_FORM = {
   filing: "single", state: "Pennsylvania", county: "", payFreq: "biweekly",
 };
 
+// LOCAL-v1A: light, non-blocking validation for the optional "ZIP code or
+// county" field. Never blocks continuing — only shows a gentle inline note.
+// Blank is always valid. A 5-digit ZIP is valid. Otherwise, a reasonable
+// place-name-shaped string (letters, spaces, hyphens, periods, apostrophes)
+// is accepted as-is; only clearly non-place-like input gets a soft note.
+function localContextNote(raw) {
+  const v = (raw || "").trim();
+  if (!v) return null;
+  if (/^\d{5}$/.test(v)) return null;
+  if (/^[A-Za-z][A-Za-z .'-]{1,49}$/.test(v)) return null;
+  return "That doesn't quite look like a ZIP code or county name — feel free to leave it as-is or adjust it.";
+}
+
 // Ledger section wrapper
 function Section({ num, title, children }) {
   return (
@@ -101,11 +114,14 @@ export default function ProfilePage({ initialForm, onSubmit, onBack }) {
           <Section num="04" title="Your location">
             <SelectField label="State" value={form.state} onChange={set("state")} options={STATES} />
             <Field
-              label="County or local area"
+              label="ZIP code or county"
+              localOnly
               value={form.county}
               onChange={set("county")}
+              onBlur={() => setForm((f) => ({ ...f, county: f.county.trim() }))}
               placeholder="Optional"
-              hint="Optional. Stored only on this device; county-level aggregation is not yet enabled."
+              hint="Optional: add your ZIP code or county for a more accurate local estimate later. We do not publish your ZIP."
+              note={localContextNote(form.county)}
             />
           </Section>
 

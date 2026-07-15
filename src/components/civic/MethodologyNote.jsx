@@ -14,6 +14,10 @@ export default function MethodologyNote() {
         NASBO, and local figures from the U.S. Census Bureau. State and local
         shares are national averages.
       </p>
+      <p className="methodology__text">
+        Local estimates are approximate in this beta. ZIP/county context will help
+        improve this later.
+      </p>
       <p className="methodology__text" id="sources">
         The People&rsquo;s Budget is nonpartisan and is not affiliated with any
         government agency, political party, or campaign. Public comparisons are

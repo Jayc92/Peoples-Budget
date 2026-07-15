@@ -1,6 +1,6 @@
 import { useId } from "react";
 
-export default function Field({ label, hint, localOnly = false, type = "text", value, onChange, ...rest }) {
+export default function Field({ label, hint, note, localOnly = false, type = "text", value, onChange, ...rest }) {
   const id = useId();
   return (
     <div className="field">
@@ -25,6 +25,7 @@ export default function Field({ label, hint, localOnly = false, type = "text", v
         {...rest}
       />
       {hint && <span className="field__hint">{hint}</span>}
+      {note && <span className="field__note">{note}</span>}
     </div>
   );
 }

@@ -52,6 +52,13 @@
   margin-top: var(--sp-1);
   display: block;
 }
+.field__note {
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  font-style: italic;
+  margin-top: var(--sp-1);
+  display: block;
+}
 .field__control,
 .input, .select {
   width: 100%;
