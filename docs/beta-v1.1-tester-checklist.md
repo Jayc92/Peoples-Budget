@@ -16,8 +16,10 @@ Short script to hand testers, plus owner-only notes for running the round. Pairs
 8. Test on your phone as well as desktop, if you can.
 9. If you see the optional ZIP/county field, try it or leave it blank and report
    whether the explanation feels clear.
-10. Report anything confusing — copy, screens, or steps that didn't make sense.
-11. Report whether verification felt understandable or annoying.
+10. After reviewing results, use the feedback link if available, or send a quick
+    note with what confused you, what broke, and what device/browser you used.
+11. Report anything confusing — copy, screens, or steps that didn't make sense.
+12. Report whether verification felt understandable or annoying.
 
 Testers don't need any technical background — plain reactions are exactly what's
 useful ("I didn't know what that box was for" is a valid and helpful report).

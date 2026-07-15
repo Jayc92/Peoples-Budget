@@ -14,3 +14,9 @@ export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
 // Supabase Edge Functions base, derived from the project URL (no extra config).
 export const FUNCTIONS_URL =
   (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/+$/, "") + "/functions/v1";
+
+// BETA-v1.2 — beta tester feedback (optional). No public contact email exists
+// in this project yet, so this defaults to "" and the feedback CTA simply does
+// not render a live mailto link until an owner sets VITE_BETA_FEEDBACK_EMAIL.
+// Never required for build or for the app to function.
+export const BETA_FEEDBACK_EMAIL = import.meta.env.VITE_BETA_FEEDBACK_EMAIL || "";

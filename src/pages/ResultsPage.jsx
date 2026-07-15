@@ -9,6 +9,7 @@ import ComparisonTable from "../components/results/ComparisonTable";
 import CommunityPulse from "../components/results/CommunityPulse";
 import DivergenceHighlights from "../components/results/DivergenceHighlights";
 import SharePanel from "../components/results/SharePanel";
+import FeedbackCTA from "../components/civic/FeedbackCTA";
 import MethodologyNote from "../components/civic/MethodologyNote";
 import Button from "../components/ui/Button";
 
@@ -133,6 +134,7 @@ export default function ResultsPage({ profile = {}, taxes, alloc, bracketIdx, da
         annualTotal={taxes ? taxes.total : 0}
         governmentTopDiff={governmentTopDiff}
       />
+      <FeedbackCTA />
       <MethodologyNote />
 
       <div className="results__actions">
