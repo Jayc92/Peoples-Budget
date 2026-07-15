@@ -376,3 +376,5 @@
 .turnstile { min-height: 65px; }
 .alloc__turnstile { margin-bottom: var(--sp-3); }
 .event-page__turnstile { margin: var(--sp-4) 0; }
+.turnstile__help { font-size: var(--fs-small); color: var(--color-ink-faint); margin-top: var(--sp-2); }
+.event-page__verify-note { font-size: var(--fs-small); color: var(--color-ink-faint); margin-top: var(--sp-2); }

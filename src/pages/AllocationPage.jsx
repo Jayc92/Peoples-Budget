@@ -55,11 +55,15 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
     if (TURNSTILE_ENABLED) { setTsToken(null); setTsKey((k) => k + 1); } // single-use reset
   };
 
-  const ctaLabel = allComplete
-    ? "See my results"
-    : needsRepair
-    ? "Resolve the highlighted categories to continue"
-    : "Complete all three levels to continue";
+  const needsVerification = TURNSTILE_ENABLED && allComplete && !tsToken;
+
+  const ctaLabel = !allComplete
+    ? needsRepair
+      ? "Resolve the highlighted categories to continue"
+      : "Complete all three levels to continue"
+    : needsVerification
+    ? "Complete verification to continue"
+    : "See my results";
 
   return (
     <div className="container container--wide alloc">
@@ -101,6 +105,9 @@ export default function AllocationPage({ alloc, onAllocChange, taxes, onSubmit, 
               {TURNSTILE_ENABLED && (
                 <div className="alloc__turnstile">
                   <TurnstileWidget key={tsKey} onToken={setTsToken} />
+                  <p className="turnstile__help">
+                    Verification helps keep public results from being flooded by bots.
+                  </p>
                 </div>
               )}
               <Button variant="primary" disabled={!submittable} onClick={handleSubmit}>

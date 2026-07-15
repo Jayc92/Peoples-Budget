@@ -30,6 +30,9 @@ export default function EventPage({ event, response, tally, onRespond, onBack, e
       {TURNSTILE_ENABLED && event && (
         <div className="event-page__turnstile">
           <TurnstileWidget key={tsKey} onToken={setTsToken} />
+          <p className="turnstile__help">
+            Verification helps keep this tally from being flooded by bots.
+          </p>
         </div>
       )}
       <LiveEventPanel
@@ -39,6 +42,9 @@ export default function EventPage({ event, response, tally, onRespond, onBack, e
         tally={tally}
         disabled={TURNSTILE_ENABLED && !tsToken}
       />
+      {TURNSTILE_ENABLED && event && !tsToken && (
+        <p className="event-page__verify-note">Complete verification to enable responses.</p>
+      )}
       {error && <p className="event-page__error" role="alert">{error}</p>}
       {onBack && (
         <div className="event-page__actions">

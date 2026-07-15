@@ -29,6 +29,8 @@ before advertising it or pointing `SHARE_URL` at it.
 
 ## Before publishing an event
 
+- [ ] **Confirm sample event is inactive or replaced** (see "Retiring the seed sample
+      event" below — do this before inviting testers).
 - [ ] Event **ID is unique** (e.g. `evt_2026_border_funding`) and not reused.
 - [ ] Title, body, and prompt contain **no placeholder wording** ("SAMPLE", "test",
       "lorem", "replace me", "TODO").
